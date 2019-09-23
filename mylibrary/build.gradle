@@ -1,0 +1,88 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
+
+// specify POM details.
+group = 'com.example.mylibrary' // Library's package name
+version = '1.0.0' // Library's version number
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.1"
+
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+
+// Generate sources-jar
+task generateSourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier 'sources'
+}
+
+// Generate javadoc-jar
+task generateJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath()
+            .join(File.pathSeparator))
+}
+
+task generateJavadocsJar(type: Jar) {
+    from generateJavadocs.destinationDir
+    classifier 'javadoc'
+}
+
+generateJavadocsJar.dependsOn generateJavadocs
+
+// include the generated jars
+artifacts {
+    archives generateJavadocsJar
+    archives generateSourcesJar
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+}
+
+// Configure your bintray plugin
+bintray {
+    user = 'ashokraj' // your Bintray's user-name
+    key = '2892b3d6387fc0c4a219182090375612bb75dad0' //your private API-key of Bintray
+    pkg {
+        repo = 'testrepo'
+        name = 'com.example.mylibrary' // Library's package name
+
+        version {
+            name = '1.0.0'
+            desc = 'My test upload from liconrepo & this is a sample description'
+            released  = new Date()
+            vcsTag = '1.0.0'
+        }
+
+        licenses = ['Apache-2.0']  // Library's licence
+//        vcsUrl = 'https://github.com/liconrepo/SampleLibrary.git' // Library's vcs url
+//        websiteUrl = 'https://github.com/liconrepo/SampleLibrary' // Website url
+    }
+    configurations = ['archives']
+}
